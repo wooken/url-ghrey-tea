@@ -7,6 +7,13 @@ Neovim plugin to open current view on GitHub
 - Python 3.6+
 - xdg-open
 
+## Installation
+
+vim plug:
+```
+Plug 'wooken/url-ghrey-tea', {'do': ':UpdateRemotePlugins'}
+```
+
 ## Commands
 | Command | Description |
 | --- | --- |
