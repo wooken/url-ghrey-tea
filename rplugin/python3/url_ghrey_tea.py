@@ -1,13 +1,13 @@
 import os
 import subprocess
 
-import pynvim  # type: ignore
+import pynvim
 
 
 @pynvim.plugin
 class Plugin:
-    def __init__(self, vim) -> None:
-        self.vim = vim
+    def __init__(self, vim: pynvim.api.Nvim) -> None:
+        self.vim: pynvim.api.Nvim = vim
 
     def _build_url(self) -> str:
         abs_file_path: str = self.vim.funcs.expand("%:p")
