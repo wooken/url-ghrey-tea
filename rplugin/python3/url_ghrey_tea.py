@@ -1,5 +1,6 @@
 import os
 import subprocess
+from typing import Optional
 
 import pynvim
 
@@ -9,18 +10,24 @@ class Plugin:
     def __init__(self, vim: pynvim.api.Nvim) -> None:
         self.vim: pynvim.api.Nvim = vim
 
-    def _build_url(self) -> str:
+    def _build_url(self) -> Optional[str]:
         abs_file_path: str = self.vim.funcs.expand("%:p")
+
+        if not abs_file_path:
+            return None
 
         self.vim.chdir(os.path.dirname(abs_file_path))
 
         # create relative file path
-        top_level_dir: str = subprocess.run(
-            ["git", "rev-parse", "--show-toplevel"],
-            capture_output=True,
-            check=True,
-            text=True,
-        ).stdout.strip()
+        try:
+            top_level_dir: str = subprocess.run(
+                ["git", "rev-parse", "--show-toplevel"],
+                capture_output=True,
+                check=True,
+                text=True,
+            ).stdout.strip()
+        except subprocess.CalledProcessError:
+            return None
         rel_file_path: str = abs_file_path
         if rel_file_path.startswith(top_level_dir):
             rel_file_path = rel_file_path[len(top_level_dir) :].strip("/")
@@ -47,10 +54,15 @@ class Plugin:
 
     @pynvim.command("GHOpenUrl", sync=True)
     def open_url(self) -> None:
-        url: str = self._build_url()
+        url: Optional[str] = self._build_url()
+        if not url:
+            return
         subprocess.call(["xdg-open", url])
 
     @pynvim.command("GHGetUrl", sync=True)
     def get_url(self) -> None:
-        url: str = self._build_url()
+        url: Optional[str] = self._build_url()
+        if not url:
+            self.vim.funcs.setreg("+", [], "l")
+            return
         self.vim.funcs.setreg("+", [url], "l")
